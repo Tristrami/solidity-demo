@@ -218,6 +218,15 @@ forge inspect FundMe storageLayout
 ╰------------------------+--------------------------------+------+--------+-------+-----------------------╯
 ```
 
+## 验证部署的合约
+
+部署合约时，使用 EtherScan 的 api 验证合约
+
+```shell
+forge script ... --verify --etherscan-api-key $ETHERSCAN_API_KEY
+```
+
+
 ## 使用 Makefile 简化命令行操作
 
 参考项目目录下的 `Makefile` 文件
