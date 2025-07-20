@@ -62,10 +62,20 @@ rm ~/.bash_history
 
 ### 编译合约
 
-这个命令会编译 `src` 下的所有合约，编译后的文件放在 `out` 目录中
+这两个命令都会编译 `src` 下的所有合约，编译后的文件放在 `out` 目录中
 
 ```shell
 forge build
+```
+
+```shell
+forge compile
+```
+
+如果项目中文件删除，需要清除构建的 artifacts 并重新构建
+
+```shell
+forge clean
 ```
 
 ### 单个合约部署
@@ -97,6 +107,12 @@ forge create SimpleStorage --rpc-url http://localhost:8545 --account defaultKey 
 
 ```shell
 forge script script/DeploySimpleStorage.s.sol --rpc-url http://localhost:8545 --account defaultKey --sender 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 --broadcast
+```
+
+如果部署脚本合约的构造函数参数需要为空，如果 `run()` 函数中需要包含参数，需要在执行命令时加上 `--sig run(...)` 参数
+
+```shell
+forge script script/DeploySimpleStorage.s.sol --rpc-url http://localhost:8545 --account defaultKey --sender 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 --broadcast --sig "run(address)" 0x1234...
 ```
 
 Foundry 十六进制转换

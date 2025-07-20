@@ -1,0 +1,8 @@
+cache/
+out/
+zkout/
+lib/
+broadcast/
+docs/
+.env
+.gas-snapshot
