@@ -230,3 +230,11 @@ forge script ... --verify --etherscan-api-key $ETHERSCAN_API_KEY
 ## 使用 Makefile 简化命令行操作
 
 参考项目目录下的 `Makefile` 文件
+
+## Function Selector
+
+通过 `cast` 可以查看函数的十六进制函数签名
+
+```shell
+cast sig "fund()"
+```
