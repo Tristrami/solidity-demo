@@ -23,6 +23,7 @@ Functions
 
 import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
 error Raffle__NotOpen();
 error Raffle__NotEnoughMoney(uint256 entranceFee);
@@ -36,9 +37,9 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
 
     enum RaffleState { OPEN, CALCULATING }
 
-    uint256 private constant BLOCK_CONFIRMATIONS = 3;
-    uint256 private constant NUM_WORDS = 1;
-    uint256 private constant CALLBACK_GAS_LIMIT = 15000;
+    uint16 private constant BLOCK_CONFIRMATIONS = 3;
+    uint32 private constant NUM_WORDS = 1;
+    uint32 private constant CALLBACK_GAS_LIMIT = 15000;
 
     uint256 private immutable i_entranceFee;
     uint256 private immutable i_interval;
@@ -46,9 +47,9 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
     // vrfCoordinator 大概相当于一个网关的角色，在合约和链下 vrf 服务中间传递信息
     address private immutable i_vrfCoordinatorAddress;
     // vrf 的订阅合约地址
-    address private immutable i_subscriptionId;
+    uint256 private immutable i_subscriptionId;
     // gasLane 地址，用于指定 gasLimit
-    address private immutable i_gasLane;
+    bytes32 private immutable i_gasLane;
 
     address payable[] private s_players;
     uint256 private s_lastTimestamp;
@@ -63,8 +64,8 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
         uint256 entranceFee,
         uint256 interval,
         address vrfCoordinatorAddress,
-        address subscriptionId,
-        address keyHash
+        uint256 subscriptionId,
+        bytes32 keyHash
     ) VRFConsumerBaseV2Plus(vrfCoordinatorAddress) {
         i_entranceFee = entranceFee;
         i_interval = interval;
@@ -89,7 +90,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
             revert Raffle__NotLotteryDrawTime();
         }
         s_raffleState = RaffleState.CALCULATING;
-        uint256 requestID = s_vrfCoordinator.requestRandomWords(createRandomWordsRequest());
+        s_vrfCoordinator.requestRandomWords(createRandomWordsRequest());
     }
 
     function shouldStartCalculatingWinner() internal view returns (bool) {
@@ -99,7 +100,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
         return hasPlayer && hasBalance && intervalPassed;
     }
 
-    function createRandomWordsRequest() internal view returns (VRFV2PlusClient.RandomWordsRequest) {
+    function createRandomWordsRequest() internal view returns (VRFV2PlusClient.RandomWordsRequest memory) {
         return VRFV2PlusClient.RandomWordsRequest({
             keyHash: i_gasLane,
             subId: i_subscriptionId,
@@ -152,15 +153,16 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
         openRaffle();
     }
 
-    function checkUpkeep(bytes calldata checkData)
+    function checkUpkeep(bytes calldata /* checkData */)
         external
+        view
         override
         returns (bool upkeepNeeded, bytes memory /* performData */) {
         upkeepNeeded = shouldStartCalculatingWinner();
-        return upkeepNeeded;
+        return (upkeepNeeded, "");
     }
 
-    function performUpkeep(bytes calldata performData) external override {
+    function performUpkeep(bytes calldata /* performData */) external override {
         startCalculatingWinner();
     }
 

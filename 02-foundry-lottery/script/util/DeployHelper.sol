@@ -17,7 +17,7 @@ contract DeployHelper is DeployConstants, BroadcastScript {
         uint256 interval;
         address vrfCoordinatorAddress;
         uint256 subscriptionId;
-        address keyHash;
+        bytes32 keyHash;
         address linkTokenAddress;
         address account;
     }
@@ -38,13 +38,13 @@ contract DeployHelper is DeployConstants, BroadcastScript {
         uint256 subId = createSubscription(ETH_SEPOLIA_VRF_COORDINATOR_ADDRESS);
         IVRFCoordinatorV2Plus vrfCoordinator = IVRFCoordinatorV2Plus(ETH_MAIN_NET_VRF_COORDINATOR_ADDRESS);
         LinkToken linkToken = LinkToken(ETH_MAIN_NET_LINK_TOKEN_ADDRESS);
-        linkToken.transferAndCall(vrfCoordinator, DEFAULT_FUND_AMOUNT, abi.encode(subId));
+        linkToken.transferAndCall(address(vrfCoordinator), DEFAULT_FUND_AMOUNT, abi.encode(subId));
         return DeployConfig({
             entranceFee: DEFAULT_ENTRANCE_FEE,
             interval: DEFAULT_INTERVAL,
             vrfCoordinatorAddress: ETH_SEPOLIA_VRF_COORDINATOR_ADDRESS,
             subscriptionId: subId,
-            keyHash: ETH_SEPOLIA_GAS_LANE_ADDRESS,
+            keyHash: ETH_SEPOLIA_GAS_LANE,
             linkTokenAddress: ETH_SEPOLIA_LINK_TOKEN_ADDRESS,
             account: 0x37CA3984F65bEB9400669c94faeEFaf1FC649964
         });
@@ -54,13 +54,13 @@ contract DeployHelper is DeployConstants, BroadcastScript {
         uint256 subId = createSubscription(ETH_MAIN_NET_VRF_COORDINATOR_ADDRESS);
         IVRFCoordinatorV2Plus vrfCoordinator = IVRFCoordinatorV2Plus(ETH_MAIN_NET_VRF_COORDINATOR_ADDRESS);
         LinkToken linkToken = LinkToken(ETH_MAIN_NET_LINK_TOKEN_ADDRESS);
-        linkToken.transferAndCall(vrfCoordinator, DEFAULT_FUND_AMOUNT, abi.encode(subId));
+        linkToken.transferAndCall(address(vrfCoordinator), DEFAULT_FUND_AMOUNT, abi.encode(subId));
         return DeployConfig({
             entranceFee: DEFAULT_ENTRANCE_FEE,
             interval: DEFAULT_INTERVAL,
             vrfCoordinatorAddress: ETH_MAIN_NET_VRF_COORDINATOR_ADDRESS,
             subscriptionId: subId,
-            keyHash: ETH_MAIN_NET_GAS_LANE_ADDRESS,
+            keyHash: ETH_MAIN_NET_GAS_LANE,
             linkTokenAddress: ETH_MAIN_NET_LINK_TOKEN_ADDRESS,
             account: 0x37CA3984F65bEB9400669c94faeEFaf1FC649964
         });
@@ -96,7 +96,7 @@ contract DeployHelper is DeployConstants, BroadcastScript {
         return new LinkToken();
     }
 
-    function getDeployConfig(uint256 chainId) public returns (DeployConfig memory) {
+    function getDeployConfig(uint256 chainId) public view returns (DeployConfig memory) {
         DeployConfig memory config = configMap[chainId];
         if (config.vrfCoordinatorAddress == address(0)) {
             revert RaffleDeployHelper__ChainNotSupported();

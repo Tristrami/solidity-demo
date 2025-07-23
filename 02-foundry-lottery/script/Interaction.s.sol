@@ -34,8 +34,8 @@ contract FundSubscription is BroadcastScript {
 contract AddConsumer is BroadcastScript {
 
     function run() external {
-        Raffle raffle = DevOpsTools.get_most_recent_deployment("Raffle", block.chainid);
+        address raffleAddress = DevOpsTools.get_most_recent_deployment("Raffle", block.chainid);
         VrfSubscriptionManager manager = new VrfSubscriptionManager();
-        manager.addConsumer(address(raffle), block.chainid);
+        manager.addConsumer(raffleAddress, block.chainid);
     }
 }

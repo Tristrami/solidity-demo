@@ -2,18 +2,19 @@
 pragma solidity ^0.8.18;
 
 import {DeployHelper} from "./DeployHelper.sol";
-import {DevOpsTools} from "../lib/foundry-devops/src/DevOpsTools.sol";
+import {DevOpsTools} from "lib/foundry-devops/src/DevOpsTools.sol";
 import {BroadcastScript} from "./BroadcastScript.sol";
+import {console2} from "forge-std/Script.sol";
 
 contract DeployHelperFactory is BroadcastScript {
 
     function getOrCreateDeployHelper(uint256 chainId) external returns (DeployHelper) {
         address deployHelperAddress = DevOpsTools.get_most_recent_deployment("DeployHelper", chainId);
         if (deployHelperAddress != address(0)) {
-            console2.log("DeployHelper 合约已部署");
+            console2.log("DeployHelper is already deployd, address: ", deployHelperAddress);
             return DeployHelper(deployHelperAddress);
         }
-        console2.log("DeployHelper 合约未部署，开始部署合约");
+        console2.log("DeployHelper is not deployed, start deploying ...");
         return DeployHelper(deploy());
     }
 
