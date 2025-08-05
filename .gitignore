@@ -4,6 +4,7 @@ zkout/
 lib/
 broadcast/
 docs/
+/**/input.json
 .env
 .gas-snapshot
 
