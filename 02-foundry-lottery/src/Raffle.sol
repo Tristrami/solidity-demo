@@ -25,21 +25,13 @@ import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFCo
 import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
-error Raffle__NotOpen();
-error Raffle__NotEnoughMoney(uint256 entranceFee);
-error Raffle__InvalidPlayerAddress(address playerAddress);
-error Raffle__PrizePoolIsEmpty();
-error Raffle__PrizeSendFailed();
-error Raffle__NoPlayer();
-error Raffle__NotLotteryDrawTime();
-
 contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
 
     enum RaffleState { OPEN, CALCULATING }
 
     uint16 private constant BLOCK_CONFIRMATIONS = 3;
     uint32 private constant NUM_WORDS = 1;
-    uint32 private constant CALLBACK_GAS_LIMIT = 15000;
+    uint32 private constant CALLBACK_GAS_LIMIT = 150000;
 
     uint256 private immutable i_entranceFee;
     uint256 private immutable i_interval;
@@ -57,8 +49,17 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
 
     event RaffleEntered(address indexed playerAddress, uint256 indexed value);
     event WinnerPicked(address indexed winnerAddress);
-    event LotteryPrizeSent(address indexed winnerAddress, uint256 prizePoolAmount);
+    event LotteryPrizeSent(address indexed winnerAddress, uint256 indexed prizePoolAmount);
     event RaffleOpened(uint256 timestamp);
+    event CalculatingStarted(uint256 indexed randomWordsRequestId);
+
+    error Raffle__NotOpen();
+    error Raffle__NotEnoughMoney(uint256 entranceFee);
+    error Raffle__InvalidPlayerAddress(address playerAddress);
+    error Raffle__PrizePoolIsEmpty();
+    error Raffle__PrizeSendFailed();
+    error Raffle__NoPlayer();
+    error Raffle__NotLotteryDrawTime();
 
     constructor(
         uint256 entranceFee,
@@ -83,6 +84,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
             revert Raffle__NotEnoughMoney(i_entranceFee);
         }
         s_players.push(payable(msg.sender));
+        emit RaffleEntered(msg.sender, msg.value);
     }
 
     function startCalculatingWinner() internal {
@@ -90,14 +92,16 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
             revert Raffle__NotLotteryDrawTime();
         }
         s_raffleState = RaffleState.CALCULATING;
-        s_vrfCoordinator.requestRandomWords(createRandomWordsRequest());
+        uint256 requestId = s_vrfCoordinator.requestRandomWords(createRandomWordsRequest());
+        emit CalculatingStarted(requestId);
     }
 
     function shouldStartCalculatingWinner() internal view returns (bool) {
+        bool raffleIsOpen = s_raffleState == RaffleState.OPEN;
         bool hasPlayer = s_players.length > 0;
         bool hasBalance = address(this).balance > 0;
         bool intervalPassed = block.timestamp - s_lastTimestamp >= i_interval;
-        return hasPlayer && hasBalance && intervalPassed;
+        return raffleIsOpen && hasPlayer && hasBalance && intervalPassed;
     }
 
     function createRandomWordsRequest() internal view returns (VRFV2PlusClient.RandomWordsRequest memory) {
@@ -107,7 +111,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
             requestConfirmations: BLOCK_CONFIRMATIONS,
             callbackGasLimit: CALLBACK_GAS_LIMIT,
             numWords: NUM_WORDS,
-            extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: true}))
+            extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
         });
     }
 
@@ -132,7 +136,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
             revert Raffle__PrizePoolIsEmpty();
         }
         uint256 balance = address(this).balance;
-        (bool callSuccess, ) = winnerAddress.call{ value: balance }("");
+        (bool callSuccess, ) = winnerAddress.call{value: balance}("");
         emit LotteryPrizeSent(winnerAddress, balance);
         if (!callSuccess) {
             revert Raffle__PrizeSendFailed();
@@ -164,6 +168,26 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
 
     function performUpkeep(bytes calldata /* performData */) external override {
         startCalculatingWinner();
+    }
+
+    function getRaffleState() external view returns (RaffleState) {
+        return s_raffleState;
+    }
+
+    function getEntranceFee() external view returns (uint256) {
+        return i_entranceFee;
+    }
+
+    function getPlayer(uint256 index) external view returns (address) {
+        return s_players[index];
+    }
+
+    function getInterval() external view returns (uint256) {
+        return i_interval;
+    }
+
+    function getVrfCoordinatorAddress() external view returns (address) {
+        return i_vrfCoordinatorAddress;
     }
 
 }

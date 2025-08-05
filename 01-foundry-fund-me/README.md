@@ -105,7 +105,7 @@ Ran 1 test suite in 6.41s (4.78s CPU time): 4 tests passed, 0 failed, 0 skipped 
 
 #### 常用 Cheat Code
 
-- `vm.startBroadcast()`，`vm.stopBroadcast()`：将在这之间的 transaction 将会被广播到区块链上
+- `vm.startBroadcast()`，`vm.stopBroadcast()`：将在这之间的 transaction 将会被广播到区块链上，一定只在 **需要修改链上数据** 的代码范围内开启广播，否则可能会造成奇怪的数据问题
 - `vm.expectRevert()`：下面一行代码执行后需要 revert
 - `vm.prank(senderAddress)`：将下次 call 的 `msg.sender` 设置为指定的地址
 - `vm.startPrank(senderAddress)`，`vm.stopPrank()`：将在这之间的所有 call 的 `msg.sender` 设置为指定的地址
