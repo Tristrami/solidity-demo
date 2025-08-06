@@ -1,21 +1,21 @@
-cache/
-out/
-zkout/
-lib/
-broadcast/
-docs/
-/**/input.json
-.env
-.gas-snapshot
+**/cache/
+**/out/
+**/zkout/
+**/lib/
+**/broadcast/
+**/docs/
+**/input.json
+**/.env
+**/.gas-snapshot
 
 # Default ignored files
-/shelf/
-/workspace.xml
+**/shelf/
+**/workspace.xml
 # Editor-based HTTP Client requests
-/httpRequests/
+**/httpRequests/
 # Datasource local storage ignored files
-/dataSources/
-/dataSources.local.xml
+**/dataSources/
+**/dataSources.local.xml
 
-.idea/
-.github/
+**/.idea/
+**/.github/
