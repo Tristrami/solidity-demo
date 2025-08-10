@@ -49,7 +49,7 @@ contract RaffleUnitTest is Test {
         // 获取 deployContext
         DeployContextHolder contextHolder = new DeployContextHolder();
         deployContext = contextHolder.getDeployContext();
-        // 初始化 Interaction
+        // 初始化 Interaction.s.sol
         createSubscription = new CreateSubscription();
         fundSubscription = new FundSubscription();
         addConsumer = new AddConsumer();

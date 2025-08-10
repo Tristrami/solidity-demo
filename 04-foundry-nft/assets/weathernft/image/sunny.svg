@@ -1,0 +1,31 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <!-- 天空背景 -->
+    <rect width="200" height="200" fill="#87CEEB" />
+
+    <!-- 太阳 -->
+    <circle cx="100" cy="100" r="40" fill="#FFD700" />
+
+    <!-- 光线组（添加旋转动画） -->
+    <g stroke="#FFD700" stroke-width="3" stroke-linecap="round" transform="rotate(0, 100, 100)">
+        <!-- 水平/垂直光线 -->
+        <line x1="100" y1="50" x2="100" y2="10" />  <!-- 上 -->
+        <line x1="150" y1="100" x2="190" y2="100" /> <!-- 右 -->
+        <line x1="100" y1="150" x2="100" y2="190" /> <!-- 下 -->
+        <line x1="50" y1="100" x2="10" y2="100" />  <!-- 左 -->
+
+        <!-- 对角线光线 -->
+        <line x1="135" y1="65" x2="165" y2="35" />   <!-- 右上 -->
+        <line x1="135" y1="135" x2="165" y2="165" /> <!-- 右下 -->
+        <line x1="65" y1="135" x2="35" y2="165" />  <!-- 左下 -->
+        <line x1="65" y1="65" x2="35" y2="35" />    <!-- 左上 -->
+
+        <!-- 旋转动画（15秒完成一圈） -->
+        <animateTransform
+                attributeName="transform"
+                type="rotate"
+                from="0 100 100"
+                to="360 100 100"
+                dur="15s"
+                repeatCount="indefinite"/>
+    </g>
+</svg>
