@@ -5,12 +5,10 @@ import {IMiaoEngine} from "./IMiaoEngine.sol";
 import {MiaoToken} from "./MiaoToken.sol";
 import {Validator} from "./Validator.sol";
 import {IERC20} from "@openzeppelin/contracts/token/erc20/IERC20.sol";
-import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import {console2} from "forge-std/Script.sol";
+import {OracleLib, AggregatorV3Interface} from "./libraries/OracleLib.sol";
 
 contract MiaoEngine is IMiaoEngine, Validator {
-    using EnumerableSet for EnumerableSet.AddressSet;
 
     /* -------------------------------------------------------------------------- */
     /*                                  Constants                                 */
@@ -30,6 +28,13 @@ contract MiaoEngine is IMiaoEngine, Validator {
     mapping(address user => mapping(address tokenAddress => uint256 value)) private s_collaterals;
     mapping(address tokenAddress => address priceFeedAddress) private s_priceFeeds;
     mapping(address user => uint256 miaoTokenMinted) private s_miaoTokenMinted;
+
+    /* -------------------------------------------------------------------------- */
+    /*                                  Libraries                                 */
+    /* -------------------------------------------------------------------------- */
+
+    using EnumerableSet for EnumerableSet.AddressSet;
+    using OracleLib for AggregatorV3Interface;
 
     /* -------------------------------------------------------------------------- */
     /*                                   Events                                   */
@@ -224,7 +229,7 @@ contract MiaoEngine is IMiaoEngine, Validator {
     function _getTokenUsdPrice(address tokenAddress) public view onlySupportedToken(tokenAddress) returns (uint256) {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(s_priceFeeds[tokenAddress]);
         // Normally 8 decimals
-        (, int256 answer,,,) = priceFeed.latestRoundData();
+        (, int256 answer,,,) = priceFeed.getStaleCheckedLatestRoundData();
         // token / usd price，18 decimals
         return uint256(answer) * 10 ** (PRECISION - priceFeed.decimals());
     }
