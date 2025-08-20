@@ -17,7 +17,7 @@ contract MiaoEngine is IMiaoEngine, Validator {
     /// @dev The precision of number when calculating
     uint256 private constant PRECISION = 18;
     /// @dev 200% collateral ratio, eg. 10$ miao => 20$ collateral token
-    uint256 private constant MININUM_COLLATERAL_RATIO = 2 * 10 ** PRECISION;
+    uint256 private constant MINIMUM_COLLATERAL_RATIO = 2 * 10 ** PRECISION;
 
     /* -------------------------------------------------------------------------- */
     /*                              Storage Variables                             */
@@ -134,7 +134,7 @@ contract MiaoEngine is IMiaoEngine, Validator {
         if (amountCollateral + bonus > amountDeposited) {
             // If the collateral is not enough to cover the debt and bonus,
             // just give all the collateral to liquidator for now, this will
-            // be improved in the futurn
+            // be improved in the future
             amountCollateral = amountDeposited;
         } else {
             amountCollateral += bonus;
@@ -262,7 +262,7 @@ contract MiaoEngine is IMiaoEngine, Validator {
     }
 
     /**
-     * @dev Reedme collateral
+     * @dev Redeem collateral
      * @param collateralTokenAddress The address of collateral token contract
      * @param amountCollateralToRedeem The amount of collateral to redeem, 18 decimals
      * @param collateralFrom The account address where the collateral token comes from
@@ -287,7 +287,7 @@ contract MiaoEngine is IMiaoEngine, Validator {
     }
 
     /**
-     * Revert if collateral ratio is less than MININUM_COLLATERAL_RATIO
+     * Revert if collateral ratio is less than MINIMUM_COLLATERAL_RATIO
      * @param user The account address
      */
     function _revertIfCollateralRatioIsBroken(address user) private view {
@@ -298,7 +298,7 @@ contract MiaoEngine is IMiaoEngine, Validator {
     }
 
     /**
-     * Revert if collateral ratio is more than or equal to MININUM_COLLATERAL_RATIO
+     * Revert if collateral ratio is more than or equal to MINIMUM_COLLATERAL_RATIO
      * @param user The account address
      */
     function _revertIfCollateralRatioIsNotBroken(address user) private view {
@@ -310,7 +310,7 @@ contract MiaoEngine is IMiaoEngine, Validator {
 
     function _checkCollateralRatio(address user) public view returns (bool isBroken, uint256 collateralRatio) {
         collateralRatio = getCollateralRatio(user);
-        isBroken = collateralRatio < MININUM_COLLATERAL_RATIO;
+        isBroken = collateralRatio < MINIMUM_COLLATERAL_RATIO;
         return (isBroken, collateralRatio);
     }
 
@@ -318,8 +318,8 @@ contract MiaoEngine is IMiaoEngine, Validator {
     /*                           Getter / View Functions                          */
     /* -------------------------------------------------------------------------- */
 
-    function getMininumCollateralRatio() public pure returns (uint256) {
-        return MININUM_COLLATERAL_RATIO;
+    function getMinimumCollateralRatio() public pure returns (uint256) {
+        return MINIMUM_COLLATERAL_RATIO;
     }
 
     function getCollateralAmount(address user, address collateralTokenAddress) public view returns (uint256) {
@@ -334,7 +334,7 @@ contract MiaoEngine is IMiaoEngine, Validator {
         return address(s_miaoToken);
     }
 
-    function getCollateralTokenAddressess() public view returns (address[] memory) {
+    function getCollateralTokenAddresses() public view returns (address[] memory) {
         return s_supportedTokenAddressSet.values();
     }
 

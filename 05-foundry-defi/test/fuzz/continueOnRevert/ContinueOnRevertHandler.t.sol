@@ -13,53 +13,61 @@ import {MockV3Aggregator} from "../../../test/mocks/MockV3Aggregator.sol";
 import {IERC20} from "@openzeppelin/contracts/token/erc20/IERC20.sol";
 
 contract ContinueOnRevertHandler is Test {
+
     MiaoEngine private miaoEngine;
     MiaoToken private miaoToken;
     address[] private tokenAddresses;
+    address[] private userDeposited;
 
     constructor(MiaoEngine _miaoEngine, MiaoToken _miaoToken) {
         miaoEngine = _miaoEngine;
         miaoToken = _miaoToken;
-        tokenAddresses = miaoEngine.getCollateralTokenAddressess();
+        tokenAddresses = miaoEngine.getCollateralTokenAddresses();
     }
 
     function deposit(uint8 collateralTokenAddressSeed, uint96 amountCollateral, uint96 amountMiaoToMint) public {
-        // bound(amountCollateral, 1, type(uint96).max);
-        // bound(amountMiaoToMint, 1, type(uint96).max);
-        address tokenAddress = pickRandomTokenAddress(collateralTokenAddressSeed);
+        bound(amountCollateral, 1, type(uint96).max);
+        bound(amountMiaoToMint, 1, type(uint96).max);
+        address tokenAddress = pickRandomAddress(tokenAddresses, collateralTokenAddressSeed);
         ERC20Mock token = ERC20Mock(tokenAddress);
         token.mint(msg.sender, amountCollateral);
         // The sender will be this handler contract if without prank
         vm.startPrank(msg.sender);
         token.approve(address(miaoEngine), amountCollateral);
         miaoEngine.depositCollateralAndMintMiaoToken(tokenAddress, amountCollateral, amountMiaoToMint);
+        userDeposited.push(msg.sender);
     }
 
     function redeem(
         uint8 collateralTokenAddressSeed,
-        address collateralFrom,
-        uint256 amountCollateralToRedeem,
-        uint256 amountMiaoToBurn
+        uint8 userSeed,
+        uint96 amountCollateralToRedeem,
+        uint96 amountMiaoToBurn
     ) public {
-        address tokenAddress = pickRandomTokenAddress(collateralTokenAddressSeed);
-        uint256 amountDeposited = miaoEngine.getCollateralAmount(collateralFrom, tokenAddress);
+        address user = pickRandomAddress(userDeposited, userSeed);
+        vm.assume(user != address(0));
+        address tokenAddress = pickRandomAddress(tokenAddresses, collateralTokenAddressSeed);
+        uint256 amountDeposited = miaoEngine.getCollateralAmount(user, tokenAddress);
         vm.assume(amountDeposited > 0);
-        uint256 miaoBalance = miaoToken.balanceOf(msg.sender);
+        uint256 miaoBalance = miaoToken.balanceOf(user);
         vm.assume(miaoBalance > 0);
-        // bound(amountCollateralToRedeem, 1, amountDeposited);
-        // bound(amountMiaoToBurn, 1, miaoBalance);
-        miaoEngine.redeemCollateral(tokenAddress, collateralFrom, amountCollateralToRedeem, amountMiaoToBurn);
+        uint256 collateralInUsd = miaoEngine.getTokenValueInUsd(tokenAddress, amountCollateralToRedeem);
+        bound(amountCollateralToRedeem, 1, amountDeposited);
+        bound(amountMiaoToBurn, collateralInUsd, miaoBalance);
+        miaoEngine.redeemCollateral(tokenAddress, user, amountCollateralToRedeem, amountMiaoToBurn);
     }
 
-    function liquidate(address user, uint8 collateralTokenAddressSeed, uint256 debtToCover) public {
-        address tokenAddreses = pickRandomTokenAddress(collateralTokenAddressSeed);
+    function liquidate(uint8 userSeed, uint8 collateralTokenAddressSeed, uint256 debtToCover) public {
+        address user = pickRandomAddress(userDeposited, userSeed);
+        vm.assume(user != address(0));
+        address tokenAddress = pickRandomAddress(tokenAddresses, collateralTokenAddressSeed);
         uint256 miaoMinted = miaoEngine.getMiaoTokenMinted(user);
         vm.assume(miaoMinted > 0);
         bound(debtToCover, 1, miaoMinted);
-        miaoEngine.liquidate(user, tokenAddreses, debtToCover);
+        miaoEngine.liquidate(user, tokenAddresses, debtToCover);
     }
 
-    function pickRandomTokenAddress(uint8 tokenSeed) private view returns (address) {
-        return tokenAddresses[tokenSeed % tokenAddresses.length];
+    function pickRandomAddress(address[] memory addresses, uint8 seed) private view returns (address) {
+        return addresses.length == 0 ? address(0) : addresses[seed % addresses.length];
     }
 }

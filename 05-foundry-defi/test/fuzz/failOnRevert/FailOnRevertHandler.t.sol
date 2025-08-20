@@ -16,8 +16,8 @@ contract FailOnRevertHandler is Test {
         miaoEngine = _miaoEngine;
     }
 
-    function getMininumCollateralRatio() public {
-        miaoEngine.getMininumCollateralRatio();
+    function getMinimumCollateralRatio() public {
+        miaoEngine.getMinimumCollateralRatio();
     }
 
     function getCollateralAmount(address user, address collateralTokenAddress) public {
@@ -32,7 +32,7 @@ contract FailOnRevertHandler is Test {
         miaoEngine.getMiaoTokenAddress();
     }
 
-    function getCollateralTokenAddressess() public {
-        miaoEngine.getCollateralTokenAddressess();
+    function getCollateralTokenAddresses() public {
+        miaoEngine.getCollateralTokenAddresses();
     }
 }

@@ -120,7 +120,7 @@ contract MiaoEngineTest is Test, Constants {
     }
 
     function test_RevertWhen_CollateralRatioIsBroken() public {
-        // This assumes the callteral ratio is 1, eg. 100$ collateral => 100$ miao
+        // This assumes the collateral ratio is 1, eg. 100$ collateral => 100$ miao
         uint256 amountCollateral = 1 ether;
         uint256 amountToMint = miaoEngine.getTokenValueInUsd(deployConfig.wethTokenAddress, amountCollateral);
         uint256 collateralRatio = 1 * 10 ** PRECISION;
@@ -140,7 +140,7 @@ contract MiaoEngineTest is Test, Constants {
         IERC20 weth = IERC20(deployConfig.wethTokenAddress);
         uint256 amountCollateral = 2 ether;
         uint256 collateralValueInUsd = miaoEngine.getTokenValueInUsd(address(weth), amountCollateral);
-        uint256 amountToMint = (collateralValueInUsd * PRECISION) / miaoEngine.getMininumCollateralRatio();
+        uint256 amountToMint = (collateralValueInUsd * PRECISION) / miaoEngine.getMinimumCollateralRatio();
         vm.startPrank(user);
         weth.approve(address(miaoEngine), amountCollateral);
         // weth
@@ -158,10 +158,10 @@ contract MiaoEngineTest is Test, Constants {
         miaoEngine.depositCollateralAndMintMiaoToken(address(weth), amountCollateral, amountToMint);
         // Assert
         // Check weth
-        uint256 endingUserWethBanlance = weth.balanceOf(user);
+        uint256 endingUserWethBalance = weth.balanceOf(user);
         uint256 endingEngineWethBalance = weth.balanceOf(address(miaoEngine));
         uint256 endingUserAmountCollateral = miaoEngine.getCollateralAmount(user, address(weth));
-        assertEq(endingUserWethBanlance, startingUserWethBalance - amountCollateral);
+        assertEq(endingUserWethBalance, startingUserWethBalance - amountCollateral);
         assertEq(endingEngineWethBalance, startingEngineWethBalance + amountCollateral);
         assertEq(endingUserAmountCollateral, startingUserAmountCollateral + amountCollateral);
         // Check miao
@@ -204,7 +204,7 @@ contract MiaoEngineTest is Test, Constants {
         uint256 amountCollateralLeft =
             miaoEngine.getCollateralAmount(user, deployConfig.wethTokenAddress) - amountCollateralToRedeem;
         console2.log("amountCollateralLeft:", amountCollateralLeft);
-        // Maxinum amount of miao the user can hold after collateral is redeemed
+        // Maximum amount of miao the user can hold after collateral is redeemed
         uint256 maximumAmountMiaoToHold =
             getAmountMiaoToMint(deployConfig.wethTokenAddress, amountCollateralLeft, DEFAULT_COLLATERAL_RATIO);
         console2.log("maximumAmountMiaoToHold:", maximumAmountMiaoToHold);
@@ -249,7 +249,7 @@ contract MiaoEngineTest is Test, Constants {
         uint256 amountCollateralLeft =
             miaoEngine.getCollateralAmount(user, deployConfig.wethTokenAddress) - amountCollateralToRedeem;
         console2.log("amountCollateralLeft:", amountCollateralLeft);
-        // Maxinum amount of miao the user can hold after collateral is redeemed
+        // Maximum amount of miao the user can hold after collateral is redeemed
         uint256 maximumAmountMiaoToHold =
             getAmountMiaoToMint(deployConfig.wethTokenAddress, amountCollateralLeft, DEFAULT_COLLATERAL_RATIO);
         console2.log("maximumAmountMiaoToHold:", maximumAmountMiaoToHold);
